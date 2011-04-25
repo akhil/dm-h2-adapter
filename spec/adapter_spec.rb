@@ -1,3 +1,4 @@
+require 'dm-core'
 require 'spec_helper'
 
 require 'dm-core/spec/shared/adapter_spec'
