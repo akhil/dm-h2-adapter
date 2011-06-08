@@ -8,16 +8,16 @@ module DataMapper
     module Adapters
 
       class H2Adapter < Adapter
-        def connection_uri
-          if name == :default
-            "h2://#{Dir.tmpdir}/#{storage_name}.db"
-          else
-            # sqlite doesn't support two in memory dbs
-            "h2://#{Dir.tmpdir}/#{storage_name}.db"
-          end
-        end
-      end
 
+        def setup!
+          adapter = DataMapper.setup(:default, {:scheme => "h2", :path => "/home/akhil/default_tests", :adapter => "h2"})
+          test_connection(adapter)
+          adapter
+        rescue Exception => e
+          puts "Could not connect to the database using '#{connection_uri}' because of: #{e.inspect}"
+        end
+
+      end
       use H2Adapter
 
     end

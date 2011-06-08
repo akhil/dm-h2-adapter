@@ -13,14 +13,15 @@ ENV['ADAPTER_SUPPORTS'] = 'all'
 describe 'DataMapper::Adapters::H2Adapter' do
 
   before :all do
-    puts "hi"
     @adapter    = DataMapper::Spec.adapter
     @repository = DataMapper.repository(@adapter.name)
+    @h2 = defined?(DataMapper::Adapters::H2Adapter)    && @adapter.kind_of?(DataMapper::Adapters::H2Adapter)
   end
 
-  it_should_behave_like "An Adapter"
+#  it_should_behave_like "An Adapter"
   it_should_behave_like "A DataObjects Adapter"
 
+=begin
   describe "with 'h2' as adapter name" do
     subject { DataMapper::Adapters::H2Adapter.new(:default, { :adapter => 'h2' }) }
     it { subject.options[:adapter].should == 'h2' }
@@ -50,5 +51,5 @@ describe 'DataMapper::Adapters::H2Adapter' do
     subject { DataMapper::Adapters::H2Adapter.new(:default, { :adapter => 'h2', 'path' => '', :database => :name }) }
     it { subject.options[:path].should == 'name' }
   end
-
+=end
 end
