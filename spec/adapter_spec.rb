@@ -19,7 +19,44 @@ describe 'DataMapper::Adapters::H2Adapter' do
   end
 
 #  it_should_behave_like "An Adapter"
-  it_should_behave_like "A DataObjects Adapter"
+#  it_should_behave_like "A DataObjects Adapter"
+  describe '#create' do
+    describe 'serial properties' do
+      before :all do
+        class ::Article
+          include DataMapper::Resource
+
+          property :id, Serial
+
+          auto_migrate!
+        end
+
+        reset_log
+
+        Article.create
+      end
+
+      it 'should not send NULL values' do
+        statement = if @h2
+          /\AINSERT INTO `articles` \(\) VALUES \(\)\z/
+        elsif @oracle
+          /\AINSERT INTO "ARTICLES" \("ID"\) VALUES \(DEFAULT\) RETURNING "ID"/
+        elsif supports_default_values? && supports_returning?
+          /\AINSERT INTO "articles" DEFAULT VALUES RETURNING \"id\"\z/
+        elsif supports_default_values?
+          /\AINSERT INTO "articles" DEFAULT VALUES\z/
+        else
+          /\AINSERT INTO "articles" \(\) VALUES \(\)\z/
+        end
+
+        puts "================="
+        puts statement
+        puts "================="
+        log_output.first.should =~ statement
+      end
+
+    end
+  end
 
 =begin
   describe "with 'h2' as adapter name" do

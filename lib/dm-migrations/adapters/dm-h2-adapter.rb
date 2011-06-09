@@ -48,9 +48,36 @@ module DataMapper
 
         # @api private
         def create_table_statement(connection, model, properties)
-          a = "#{super}"
-          puts a
-          a
+          statement = DataMapper::Ext::String.compress_lines(<<-SQL)
+            CREATE TABLE #{quote_name(model.storage_name(name))}
+            (#{properties.map { |property| property_schema_statement(connection, property_schema_hash(property)) }.join(', ')},
+            PRIMARY KEY(#{ properties.key.map { |property| quote_name(property.field) }.join(', ')}))
+          SQL
+
+          statement
+        end
+
+         # @api semipublic
+        def create_model_storage(model)
+          name       = self.name
+          properties = model.properties_with_subclasses(name)
+
+          return false if storage_exists?(model.storage_name(name))
+          return false if properties.empty?
+
+          with_connection do |connection|
+            statements = [ create_table_statement(connection, model, properties) ]
+            statements.concat(create_index_statements(model))
+            statements.concat(create_unique_index_statements(model))
+
+            statements.each do |statement|
+              command   = connection.create_command(statement)
+              puts  "#{command.inspect}---11111111111"
+              command.execute_non_query
+            end
+          end
+
+          true
         end
 
         # @api private
@@ -239,6 +266,7 @@ module DataMapper
         #
         # @api private
         def integer_statement_sign(range)
+          puts "---in unsigned---------"
           ' UNSIGNED' unless range.first < 0
         end
 
