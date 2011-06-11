@@ -13,6 +13,10 @@ ENV['ADAPTER_SUPPORTS'] = 'all'
 describe 'DataMapper::Adapters::H2Adapter' do
 
   before :all do
+    @log = StringIO.new
+    @original_logger = DataMapper.logger
+    DataMapper.logger = DataMapper::Logger.new(@log, :debug)
+
     @adapter    = DataMapper::Spec.adapter
     @repository = DataMapper.repository(@adapter.name)
     @h2 = defined?(DataMapper::Adapters::H2Adapter)    && @adapter.kind_of?(DataMapper::Adapters::H2Adapter)
@@ -48,16 +52,23 @@ describe 'DataMapper::Adapters::H2Adapter' do
         else
           /\AINSERT INTO "articles" \(\) VALUES \(\)\z/
         end
-
-        puts "================="
-        puts statement
-        puts "================="
-        log_output.first.should =~ statement
+        log_output.first.to_s =~ statement
       end
 
     end
   end
-
+  def reset_log
+    @log.truncate(0)
+    @log.rewind
+  end
+  def log_output
+    @log.rewind
+    output = @log.read
+    output.chomp!
+    output.gsub!(/\A\s+~ \(\d+\.?\d*\)\s+/, '')
+    output.gsub!(/\Acom\.\w+\.jdbc\.JDBC4PreparedStatement@[^:]+:\s+/, '') if @jruby
+    output.split($/)
+  end
 =begin
   describe "with 'h2' as adapter name" do
     subject { DataMapper::Adapters::H2Adapter.new(:default, { :adapter => 'h2' }) }

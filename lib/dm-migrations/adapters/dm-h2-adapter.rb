@@ -267,7 +267,11 @@ module DataMapper
         # @api private
         def integer_statement_sign(range)
           puts "---in unsigned---------"
-          ' UNSIGNED' unless range.first < 0
+          ' ' unless range.first < 0
+        end
+
+        def supports_default_values?
+          false
         end
 
         # @api private
